@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Roteiros Multilíngue - IA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Gerador de Roteiros com IA</h1>
+            <p class="subtitle">Crie roteiros detalhados em múltiplos idiomas usando Google Gemini</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Configurações -->
+            <section class="config-section">
+                <h2>⚙️ Configurações</h2>
+
+                <div class="form-group">
+                    <label for="apiKey">
+                        <strong>API Key do Google Gemini:</strong>
+                        <a href="https://makersuite.google.com/app/apikey" target="_blank" class="help-link">
+                            (Obter API Key)
+                        </a>
+                    </label>
+                    <div class="input-with-button">
+                        <input
+                            type="password"
+                            id="apiKey"
+                            placeholder="Cole sua API Key aqui..."
+                            autocomplete="off"
+                        >
+                        <button type="button" onclick="toggleApiKey()" class="toggle-btn">👁️</button>
+                        <button type="button" onclick="salvarApiKey()" class="save-btn">💾 Salvar</button>
+                    </div>
+                    <small class="hint">Sua API Key será salva localmente no navegador</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="titulo"><strong>Título do Roteiro:</strong></label>
+                    <input
+                        type="text"
+                        id="titulo"
+                        placeholder="Ex: Como começar no YouTube em 2025"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="customPrompt"><strong>Prompt Customizado:</strong></label>
+                    <textarea
+                        id="customPrompt"
+                        rows="10"
+                        placeholder="Configure o prompt para geração dos roteiros..."
+                    ></textarea>
+                    <div class="button-group">
+                        <button type="button" onclick="salvarPrompt()" class="btn-secondary">
+                            💾 Salvar Prompt
+                        </button>
+                        <button type="button" onclick="resetarPrompt()" class="btn-secondary">
+                            🔄 Resetar para Padrão
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="gerarRoteiros()" class="btn-primary btn-large">
+                    🚀 Gerar Roteiros em Todos os Idiomas
+                </button>
+            </section>
+
+            <!-- Loading -->
+            <div id="loading" class="loading-section" style="display: none;">
+                <div class="spinner"></div>
+                <p id="progressText">Iniciando geração...</p>
+            </div>
+
+            <!-- Resultados -->
+            <section id="results" class="results-section" style="display: none;">
+                <h2>📝 Roteiros Gerados</h2>
+
+                <div class="idioma-card">
+                    <div class="idioma-header">
+                        <h3>🇧🇷 Português</h3>
+                        <div class="button-group">
+                            <button onclick="copiarRoteiro('portugues')" class="btn-copy">📋 Copiar</button>
+                            <button onclick="downloadRoteiro('portugues', 'txt')" class="btn-secondary">📥 TXT</button>
+                            <button onclick="downloadRoteiro('portugues', 'docx')" class="btn-secondary">📥 DOCX</button>
+                        </div>
+                    </div>
+                    <div class="roteiro-container">
+                        <pre id="roteiro-portugues" class="roteiro-content">Aguardando geração...</pre>
+                    </div>
+                    <div class="stats" id="stats-portugues"></div>
+                </div>
+
+                <div class="idioma-card">
+                    <div class="idioma-header">
+                        <h3>🇪🇸 Espanhol</h3>
+                        <div class="button-group">
+                            <button onclick="copiarRoteiro('espanhol')" class="btn-copy">📋 Copiar</button>
+                            <button onclick="downloadRoteiro('espanhol', 'txt')" class="btn-secondary">📥 TXT</button>
+                            <button onclick="downloadRoteiro('espanhol', 'docx')" class="btn-secondary">📥 DOCX</button>
+                        </div>
+                    </div>
+                    <div class="roteiro-container">
+                        <pre id="roteiro-espanhol" class="roteiro-content">Aguardando geração...</pre>
+                    </div>
+                    <div class="stats" id="stats-espanhol"></div>
+                </div>
+
+                <div class="idioma-card">
+                    <div class="idioma-header">
+                        <h3>🇺🇸 Inglês</h3>
+                        <div class="button-group">
+                            <button onclick="copiarRoteiro('ingles')" class="btn-copy">📋 Copiar</button>
+                            <button onclick="downloadRoteiro('ingles', 'txt')" class="btn-secondary">📥 TXT</button>
+                            <button onclick="downloadRoteiro('ingles', 'docx')" class="btn-secondary">📥 DOCX</button>
+                        </div>
+                    </div>
+                    <div class="roteiro-container">
+                        <pre id="roteiro-ingles" class="roteiro-content">Aguardando geração...</pre>
+                    </div>
+                    <div class="stats" id="stats-ingles"></div>
+                </div>
+
+                <div class="idioma-card">
+                    <div class="idioma-header">
+                        <h3>🇷🇺 Russo</h3>
+                        <div class="button-group">
+                            <button onclick="copiarRoteiro('russo')" class="btn-copy">📋 Copiar</button>
+                            <button onclick="downloadRoteiro('russo', 'txt')" class="btn-secondary">📥 TXT</button>
+                            <button onclick="downloadRoteiro('russo', 'docx')" class="btn-secondary">📥 DOCX</button>
+                        </div>
+                    </div>
+                    <div class="roteiro-container">
+                        <pre id="roteiro-russo" class="roteiro-content">Aguardando geração...</pre>
+                    </div>
+                    <div class="stats" id="stats-russo"></div>
+                </div>
+
+                <div class="idioma-card">
+                    <div class="idioma-header">
+                        <h3>🇸🇦 Árabe</h3>
+                        <div class="button-group">
+                            <button onclick="copiarRoteiro('arabe')" class="btn-copy">📋 Copiar</button>
+                            <button onclick="downloadRoteiro('arabe', 'txt')" class="btn-secondary">📥 TXT</button>
+                            <button onclick="downloadRoteiro('arabe', 'docx')" class="btn-secondary">📥 DOCX</button>
+                        </div>
+                    </div>
+                    <div class="roteiro-container">
+                        <pre id="roteiro-arabe" class="roteiro-content">Aguardando geração...</pre>
+                    </div>
+                    <div class="stats" id="stats-arabe"></div>
+                </div>
+
+                <!-- Botões de download em massa -->
+                <div class="config-section" style="margin-top: 30px;">
+                    <h3>📦 Download em Massa</h3>
+                    <div class="button-group">
+                        <button onclick="downloadTodosRoteiros('txt')" class="btn-primary">
+                            📥 Baixar Todos (TXT ZIP)
+                        </button>
+                        <button onclick="downloadTodosRoteiros('docx')" class="btn-primary">
+                            📥 Baixar Todos (DOCX ZIP)
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>Desenvolvido com Google Gemini AI • 2025</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
