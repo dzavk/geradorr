@@ -1,5 +1,6 @@
-// Importar a biblioteca do Google Generative AI via CDN
-import { GoogleGenerativeAI } from 'https://esm.run/@google/generative-ai';
+// Configuração da API Claude
+const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
+const CLAUDE_MODEL = "claude-3-5-haiku-20241022";
 
 // Prompt padrão para roteiros longos
 const PROMPT_PADRAO = `VOCÊ É UM ROTEIRISTA PROFISSIONAL. Seu trabalho é ESCREVER IMEDIATAMENTE um roteiro completo.
@@ -61,7 +62,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Carregar configurações do localStorage
 function carregarConfiguracoes() {
-    const apiKeySalva = localStorage.getItem('gemini_api_key');
+    const apiKeySalva = localStorage.getItem('claude_api_key');
     const promptSalvo = localStorage.getItem('custom_prompt');
 
     if (apiKeySalva) {
@@ -84,7 +85,7 @@ window.salvarApiKey = function() {
         return;
     }
 
-    localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem('claude_api_key', apiKey);
     alert('✅ API Key salva com sucesso!');
 };
 
@@ -132,35 +133,58 @@ function atualizarProgresso(mensagem) {
     }
 }
 
-// Função para contar palavras e caracteres
-function contarEstatisticas(texto) {
-    const palavras = texto.trim().split(/\s+/).length;
-    const caracteres = texto.length;
-    return { palavras, caracteres };
-}
-
 // Função para exibir estatísticas
-function exibirEstatisticas(idioma, texto) {
-    const stats = contarEstatisticas(texto);
+function exibirEstatisticas(idioma, palavras, caracteres) {
     const statsElement = document.getElementById(`stats-${idioma}`);
     if (statsElement) {
         statsElement.innerHTML = `
             📊 <strong>Estatísticas:</strong>
-            ${stats.palavras.toLocaleString('pt-BR')} palavras |
-            ${stats.caracteres.toLocaleString('pt-BR')} caracteres
+            ${palavras.toLocaleString('pt-BR')} palavras |
+            ${caracteres.toLocaleString('pt-BR')} caracteres
         `;
     }
 }
 
-// Função para gerar um roteiro longo em 2 partes
-async function gerarRoteiroLongo(model, titulo, customPrompt, idioma) {
-    // PARTE 1: Gerar primeira metade do roteiro
-    atualizarProgresso(`🎬 Gerando ${idioma.flag} ${idioma.nome} - Parte 1/2...`);
+// Função para chamar API do Claude
+async function chamarClaudeAPI(apiKey, prompt) {
+    const response = await fetch(CLAUDE_API_URL, {
+        method: 'POST',
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: CLAUDE_MODEL,
+            max_tokens: 8192,
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ]
+        })
+    });
 
-    const promptParte1 = customPrompt
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Erro na API do Claude');
+    }
+
+    const data = await response.json();
+    return data.content[0].text;
+}
+
+// Função para gerar um roteiro longo em 2 partes
+async function gerarRoteiroLongo(apiKey, titulo, customPrompt, idiomaInfo) {
+    // PARTE 1
+    let promptParte1 = customPrompt
         .replace(/{titulo}/g, titulo)
-        .replace(/{idioma}/g, idioma.nome) +
-        `\n\n━━━━━━━━━━━━━━━━━━━━━━
+        .replace(/{idioma}/g, idiomaInfo.nome);
+
+    promptParte1 += `
+
+━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ INSTRUÇÕES PARA PARTE 1/2:
 ━━━━━━━━━━━━━━━━━━━━━━
 
@@ -176,19 +200,15 @@ Esta é a PRIMEIRA PARTE do roteiro. Você DEVE escrever aproximadamente 5.000-6
 - Não peça mais informações
 - Não escreva a conclusão ainda (deixe para parte 2)
 
-🚀 COMECE A ESCREVER AGORA! Escreva direto em ${idioma.nome}:`;
+🚀 COMECE A ESCREVER AGORA! Escreva direto em ${idiomaInfo.nome}:`;
 
-    const resultParte1 = await model.generateContent(promptParte1);
-    const responseParte1 = await resultParte1.response;
-    const textoParte1 = responseParte1.text();
+    const textoParte1 = await chamarClaudeAPI(apiKey, promptParte1);
 
-    // Pequena pausa entre as requisições
+    // Pausa de 2 segundos
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // PARTE 2: Continuar e finalizar o roteiro
-    atualizarProgresso(`🎬 Gerando ${idioma.flag} ${idioma.nome} - Parte 2/2...`);
-
-    const promptParte2 = `VOCÊ É UM ROTEIRISTA PROFISSIONAL. Continue escrevendo o roteiro sobre "${titulo}" em ${idioma.nome}.
+    // PARTE 2
+    const promptParte2 = `VOCÊ É UM ROTEIRISTA PROFISSIONAL. Continue escrevendo o roteiro sobre "${titulo}" em ${idiomaInfo.nome}.
 
 ━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ INSTRUÇÕES PARA PARTE 2/2:
@@ -212,16 +232,11 @@ ${textoParte1}
 - NÃO peça esclarecimentos
 - Apenas CONTINUE e FINALIZE
 
-🚀 CONTINUE ESCREVENDO AGORA em ${idioma.nome}:`;
+🚀 CONTINUE ESCREVENDO AGORA em ${idiomaInfo.nome}:`;
 
-    const resultParte2 = await model.generateContent(promptParte2);
-    const responseParte2 = await resultParte2.response;
-    const textoParte2 = responseParte2.text();
+    const textoParte2 = await chamarClaudeAPI(apiKey, promptParte2);
 
-    // Juntar as duas partes
-    const roteiroCompleto = textoParte1 + '\n\n' + textoParte2;
-
-    return roteiroCompleto;
+    return textoParte1 + '\n\n' + textoParte2;
 }
 
 // Função principal para gerar roteiros
@@ -232,7 +247,7 @@ window.gerarRoteiros = async function() {
 
     // Validações
     if (!apiKey) {
-        alert('⚠️ Por favor, insira sua API Key do Google Gemini.');
+        alert('⚠️ Por favor, insira sua API Key do Claude (Anthropic).');
         document.getElementById('apiKey').focus();
         return;
     }
@@ -250,11 +265,11 @@ window.gerarRoteiros = async function() {
     }
 
     // Salvar API Key automaticamente
-    localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem('claude_api_key', apiKey);
 
     // Mostrar loading
     document.getElementById('loading').style.display = 'block';
-    document.getElementById('results').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
     atualizarProgresso('🚀 Iniciando geração de roteiros longos...');
 
     // Limpar roteiros anteriores
@@ -269,94 +284,67 @@ window.gerarRoteiros = async function() {
         }
     });
 
-    try {
-        // Inicializar API do Gemini
-        atualizarProgresso('🔧 Conectando com Google Gemini AI...');
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    let sucessos = 0;
+    let erros = 0;
 
-        // Mostrar resultados desde o início
-        document.getElementById('results').style.display = 'block';
+    // Gerar roteiros para cada idioma
+    for (const [idiomaKey, idiomaInfo] of Object.entries(IDIOMAS)) {
+        try {
+            atualizarProgresso(`🎬 Gerando ${idiomaInfo.flag} ${idiomaInfo.nome}...`);
 
-        // Gerar roteiros para cada idioma SEQUENCIALMENTE (um por vez)
-        let sucessos = 0;
-        let erros = 0;
+            const roteiro = await gerarRoteiroLongo(apiKey, titulo, customPrompt, idiomaInfo);
 
-        for (const idiomaKey of Object.keys(IDIOMAS)) {
-            const idioma = IDIOMAS[idiomaKey];
-
-            try {
-                atualizarProgresso(`🎬 Gerando roteiro em ${idioma.flag} ${idioma.nome}...`);
-
-                const roteiroCompleto = await gerarRoteiroLongo(model, titulo, customPrompt, idioma);
-
-                // Exibir o roteiro assim que estiver pronto
-                const elemento = document.getElementById(`roteiro-${idiomaKey}`);
-                if (elemento) {
-                    elemento.textContent = roteiroCompleto;
-                }
-
-                // Exibir estatísticas
-                exibirEstatisticas(idiomaKey, roteiroCompleto);
-
-                sucessos++;
-
-                // Scroll suave até o roteiro gerado
-                const card = elemento.closest('.idioma-card');
-                if (card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-
-            } catch (erro) {
-                console.error(`Erro ao gerar roteiro em ${idioma.nome}:`, erro);
-
-                const elemento = document.getElementById(`roteiro-${idiomaKey}`);
-                if (elemento) {
-                    elemento.textContent = `❌ Erro ao gerar roteiro: ${erro.message}\n\nVerifique sua API Key e tente novamente.`;
-                }
-
-                erros++;
+            // Exibir roteiro
+            const elemento = document.getElementById(`roteiro-${idiomaKey}`);
+            if (elemento) {
+                elemento.textContent = roteiro;
             }
 
-            // Pausa entre idiomas para não sobrecarregar a API
-            if (idiomaKey !== 'arabe') { // Não pausar no último idioma
+            // Calcular estatísticas
+            const palavras = roteiro.split(/\s+/).length;
+            const caracteres = roteiro.length;
+            exibirEstatisticas(idiomaKey, palavras, caracteres);
+
+            sucessos++;
+
+            // Scroll até o roteiro
+            const card = elemento.closest('.idioma-card');
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // Pausa entre idiomas
+            if (idiomaKey !== 'arabe') {
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
+
+        } catch (erro) {
+            console.error(`Erro ao gerar ${idiomaInfo.nome}:`, erro);
+
+            const elemento = document.getElementById(`roteiro-${idiomaKey}`);
+            if (elemento) {
+                elemento.textContent = `❌ Erro: ${erro.message}`;
+            }
+            erros++;
         }
-
-        // Finalizar
-        document.getElementById('loading').style.display = 'none';
-
-        if (sucessos === Object.keys(IDIOMAS).length) {
-            atualizarProgresso('✅ Todos os roteiros foram gerados com sucesso!');
-            alert(`✅ Sucesso! Todos os ${sucessos} roteiros foram gerados.`);
-        } else if (sucessos > 0) {
-            atualizarProgresso(`⚠️ Geração parcial: ${sucessos} sucessos, ${erros} erros.`);
-            alert(`⚠️ ${sucessos} roteiros gerados com sucesso, ${erros} falharam.`);
-        } else {
-            atualizarProgresso('❌ Falha na geração de todos os roteiros.');
-            alert('❌ Nenhum roteiro foi gerado. Verifique sua API Key e conexão.');
-        }
-
-        // Scroll suave até os resultados
-        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-
-    } catch (erro) {
-        console.error('Erro geral:', erro);
-
-        let mensagemErro = erro.message;
-
-        if (mensagemErro.includes('API_KEY_INVALID') || mensagemErro.includes('API key')) {
-            mensagemErro = 'API Key inválida. Verifique se você copiou corretamente.';
-        } else if (mensagemErro.includes('quota')) {
-            mensagemErro = 'Cota da API excedida. Tente novamente mais tarde.';
-        } else if (mensagemErro.includes('network') || mensagemErro.includes('fetch')) {
-            mensagemErro = 'Erro de conexão. Verifique sua internet.';
-        }
-
-        alert(`❌ Erro ao gerar roteiros: ${mensagemErro}`);
-        document.getElementById('loading').style.display = 'none';
     }
+
+    // Finalizar
+    document.getElementById('loading').style.display = 'none';
+
+    if (sucessos === Object.keys(IDIOMAS).length) {
+        atualizarProgresso('✅ Todos os roteiros foram gerados com sucesso!');
+        alert(`✅ Sucesso! Todos os ${sucessos} roteiros foram gerados.`);
+    } else if (sucessos > 0) {
+        atualizarProgresso(`⚠️ Geração parcial: ${sucessos} sucessos, ${erros} erros.`);
+        alert(`⚠️ ${sucessos} roteiros gerados com sucesso, ${erros} falharam.`);
+    } else {
+        atualizarProgresso('❌ Falha na geração de todos os roteiros.');
+        alert('❌ Nenhum roteiro foi gerado. Verifique sua API Key e conexão.');
+    }
+
+    // Scroll até os resultados
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 };
 
 // Função para copiar roteiro
@@ -393,3 +381,6 @@ window.copiarRoteiro = async function(idioma) {
 // Log de inicialização
 console.log('🎬 Gerador de Roteiros IA carregado com sucesso!');
 console.log('📚 Idiomas disponíveis:', Object.keys(IDIOMAS).join(', '));
+console.log('🖥️ Modo: Standalone (HTML + JavaScript puro)');
+console.log('🤖 Modelo: claude-3-5-haiku-20241022');
+console.log('⚠️ CORS: Chamadas diretas para API do Claude');

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Multilíngue - IA</title>
+    <title>Gerador de Roteiros Multilíngue - Claude AI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🎬 Gerador de Roteiros com IA</h1>
-            <p class="subtitle">Crie roteiros detalhados em múltiplos idiomas usando Google Gemini</p>
+            <p class="subtitle">Crie roteiros detalhados em múltiplos idiomas usando Claude AI</p>
         </header>
 
         <div class="main-content">
@@ -20,8 +20,8 @@
 
                 <div class="form-group">
                     <label for="apiKey">
-                        <strong>API Key do Google Gemini:</strong>
-                        <a href="https://makersuite.google.com/app/apikey" target="_blank" class="help-link">
+                        <strong>API Key do Claude (Anthropic):</strong>
+                        <a href="https://console.anthropic.com/settings/keys" target="_blank" class="help-link">
                             (Obter API Key)
                         </a>
                     </label>
@@ -29,7 +29,7 @@
                         <input
                             type="password"
                             id="apiKey"
-                            placeholder="Cole sua API Key aqui..."
+                            placeholder="Cole sua API Key do Claude aqui (sk-ant-...)..."
                             autocomplete="off"
                         >
                         <button type="button" onclick="toggleApiKey()" class="toggle-btn">👁️</button>
@@ -48,11 +48,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="customPrompt"><strong>Prompt Customizado:</strong></label>
+                    <label for="customPrompt"><strong>Prompt Customizado (opcional):</strong></label>
                     <textarea
                         id="customPrompt"
-                        rows="10"
-                        placeholder="Configure o prompt para geração dos roteiros..."
+                        rows="12"
+                        placeholder="Use {titulo} e {idioma} como variáveis..."
                     ></textarea>
                     <div class="button-group">
                         <button type="button" onclick="salvarPrompt()" class="btn-secondary">
@@ -62,6 +62,7 @@
                             🔄 Resetar para Padrão
                         </button>
                     </div>
+                    <small class="hint">Use {titulo} para o título e {idioma} para o idioma no prompt</small>
                 </div>
 
                 <button onclick="gerarRoteiros()" class="btn-primary btn-large">
@@ -137,10 +138,10 @@
         </div>
 
         <footer>
-            <p>Desenvolvido com Google Gemini AI • 2025</p>
+            <p>Desenvolvido com Claude AI (Anthropic) • 2025</p>
         </footer>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
