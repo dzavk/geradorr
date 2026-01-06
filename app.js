@@ -2,20 +2,48 @@
 import { GoogleGenerativeAI } from 'https://esm.run/@google/generative-ai';
 
 // Prompt padrão para roteiros longos
-const PROMPT_PADRAO = `Crie um roteiro MUITO EXTENSO e DETALHADO para um vídeo sobre '{titulo}' em {idioma}.
+const PROMPT_PADRAO = `VOCÊ É UM ROTEIRISTA PROFISSIONAL. Seu trabalho é ESCREVER IMEDIATAMENTE um roteiro completo.
 
-O roteiro deve ter aproximadamente 10.000-12.000 palavras e conter:
+TÍTULO DO VÍDEO: "{titulo}"
+IDIOMA: {idioma}
 
-- Introdução cativante e elaborada (gancho inicial forte)
-- Desenvolvimento profundo com múltiplos pontos principais bem detalhados
-- Exemplos práticos e histórias
-- Transições suaves entre seções
-- Conclusão impactante com call-to-action
-- Tom: engajador, profissional e informativo
+⚠️ ATENÇÃO - REGRAS OBRIGATÓRIAS:
+1. NÃO FAÇA PERGUNTAS
+2. NÃO PEÇA INFORMAÇÕES ADICIONAIS
+3. NÃO DIGA QUE PRECISA DE MAIS DETALHES
+4. COMECE A ESCREVER O ROTEIRO AGORA MESMO
+5. Use APENAS o título fornecido acima: "{titulo}"
 
-O roteiro deve ser único e criativo, diferente dos outros idiomas, mas mantendo o mesmo tema e propósito.
+📝 ESTRUTURA OBRIGATÓRIA DO ROTEIRO (10.000-12.000 palavras):
 
-IMPORTANTE: Este é um roteiro MUITO LONGO e COMPLETO, não economize em detalhes. Seja o mais extenso e detalhado possível.`;
+1️⃣ HOOK/INTRODUÇÃO (500-800 palavras)
+   - Gancho inicial impactante
+   - Apresentação do tema "{titulo}"
+   - Por que este assunto é importante
+
+2️⃣ DESENVOLVIMENTO (8.000-9.000 palavras)
+   - Mínimo 10 pontos principais detalhados
+   - Cada ponto com 700-900 palavras
+   - Exemplos práticos e histórias reais
+   - Dados e estatísticas
+   - Transições suaves entre tópicos
+
+3️⃣ CONCLUSÃO (500-800 palavras)
+   - Resumo dos pontos principais
+   - Call-to-action forte
+   - Mensagem final inspiradora
+
+🎯 TOM: Engajador, profissional, informativo e motivacional
+
+⚡ IMPORTANTE:
+- Seja EXTREMAMENTE detalhado e extenso
+- Cada seção deve ser rica em informações
+- Use storytelling quando apropriado
+- Mantenha o leitor engajado do início ao fim
+
+🚀 COMECE AGORA! Escreva o roteiro completo em {idioma} sobre "{titulo}":
+
+[INÍCIO DO ROTEIRO]`;
 
 // Idiomas suportados
 const IDIOMAS = {
@@ -132,10 +160,23 @@ async function gerarRoteiroLongo(model, titulo, customPrompt, idioma) {
     const promptParte1 = customPrompt
         .replace(/{titulo}/g, titulo)
         .replace(/{idioma}/g, idioma.nome) +
-        `\n\nIMPORTANTE: Esta é a PRIMEIRA PARTE do roteiro. Crie a introdução completa e a primeira metade do desenvolvimento.
-        Termine em um ponto natural, mas SEM concluir o roteiro. A segunda parte continuará daqui.
-        Escreva aproximadamente 5.000-6.000 palavras nesta primeira parte.
-        Seja MUITO detalhado, use exemplos extensos, histórias completas e explicações profundas.`;
+        `\n\n━━━━━━━━━━━━━━━━━━━━━━
+⚠️ INSTRUÇÕES PARA PARTE 1/2:
+━━━━━━━━━━━━━━━━━━━━━━
+
+Esta é a PRIMEIRA PARTE do roteiro. Você DEVE escrever aproximadamente 5.000-6.000 palavras.
+
+✅ O QUE ESCREVER AGORA:
+- HOOK/INTRODUÇÃO completa
+- Primeiros 5-6 pontos do DESENVOLVIMENTO (bem detalhados)
+- Cada ponto com 700-900 palavras
+
+❌ NÃO FAÇA:
+- Não faça perguntas
+- Não peça mais informações
+- Não escreva a conclusão ainda (deixe para parte 2)
+
+🚀 COMECE A ESCREVER AGORA! Escreva direto em ${idioma.nome}:`;
 
     const resultParte1 = await model.generateContent(promptParte1);
     const responseParte1 = await resultParte1.response;
@@ -147,25 +188,31 @@ async function gerarRoteiroLongo(model, titulo, customPrompt, idioma) {
     // PARTE 2: Continuar e finalizar o roteiro
     atualizarProgresso(`🎬 Gerando ${idioma.flag} ${idioma.nome} - Parte 2/2...`);
 
-    const promptParte2 = `Continue e FINALIZE o roteiro sobre '${titulo}' em ${idioma.nome}.
+    const promptParte2 = `VOCÊ É UM ROTEIRISTA PROFISSIONAL. Continue escrevendo o roteiro sobre "${titulo}" em ${idioma.nome}.
+
+━━━━━━━━━━━━━━━━━━━━━━
+⚠️ INSTRUÇÕES PARA PARTE 2/2:
+━━━━━━━━━━━━━━━━━━━━━━
 
 Esta é a SEGUNDA E ÚLTIMA PARTE do roteiro.
 
-Aqui está a primeira parte que você já escreveu:
-
+📄 PARTE 1 JÁ ESCRITA:
 ${textoParte1}
 
-Agora CONTINUE de onde parou e complete o roteiro com:
+✅ O QUE ESCREVER AGORA (5.000-6.000 palavras):
+- Continue de onde parou
+- Escreva os pontos 6-10+ do DESENVOLVIMENTO
+- Cada ponto com 700-900 palavras
+- CONCLUSÃO completa (500-800 palavras)
+- Call-to-action final forte
 
-- Continuação natural do desenvolvimento
-- Todos os pontos restantes importantes
-- Mais exemplos práticos e casos reais
-- Conclusão impactante e completa
-- Call-to-action final
+❌ REGRAS:
+- NÃO repita o que já foi escrito
+- NÃO faça perguntas
+- NÃO peça esclarecimentos
+- Apenas CONTINUE e FINALIZE
 
-Escreva aproximadamente 5.000-6.000 palavras nesta segunda parte para completar o roteiro.
-Seja MUITO detalhado e extenso. O roteiro final deve ter entre 10.000-12.000 palavras no total.
-NÃO repita o que já foi escrito, apenas CONTINUE e FINALIZE com muitos detalhes.`;
+🚀 CONTINUE ESCREVENDO AGORA em ${idioma.nome}:`;
 
     const resultParte2 = await model.generateContent(promptParte2);
     const responseParte2 = await resultParte2.response;
