@@ -4,6 +4,7 @@
 
 - Python 3.8 ou superior instalado
 - Conexão com internet
+- API Key do Claude (Anthropic)
 
 ## 🔧 Instalação
 
@@ -20,7 +21,7 @@ Ou instale manualmente:
 ```bash
 pip install Flask==3.0.0
 pip install flask-cors==4.0.0
-pip install google-generativeai==0.3.2
+pip install requests==2.31.0
 pip install python-docx==1.1.0
 ```
 
@@ -48,11 +49,11 @@ http://localhost:5000
 
 ## 🎯 Como Usar
 
-1. **Obter API Key do Google Gemini**
-   - Acesse: https://makersuite.google.com/app/apikey
-   - Faça login com sua conta Google
-   - Clique em "Create API Key"
-   - Copie a chave gerada
+1. **Obter API Key do Claude (Anthropic)**
+   - Acesse: https://console.anthropic.com/settings/keys
+   - Faça login ou crie uma conta na Anthropic
+   - Clique em "Create Key" ou "Generate API Key"
+   - Copie a chave gerada (começa com "sk-ant-...")
 
 2. **Configurar na Interface**
    - Cole a API Key no campo correspondente
@@ -120,11 +121,14 @@ python --version
 
 ## 📝 Notas
 
+- **Modelo usado**: Claude 3.5 Haiku (claude-3-5-haiku-20241022)
+- **Limite de tokens**: 8.192 tokens por requisição
 - Os roteiros são gerados em 2 partes de ~5.000 palavras cada
 - Total: 10.000-12.000 palavras por roteiro
 - 5 idiomas: Português, Espanhol, Inglês, Russo, Árabe
 - API Key fica salva no localStorage do navegador
 - Prompt customizado também fica salvo
+- Prompts imperativos impedem a IA de fazer perguntas
 
 ## 🛑 Para parar o servidor
 
@@ -132,4 +136,4 @@ Pressione `CTRL+C` no terminal onde o servidor está rodando.
 
 ---
 
-**Desenvolvido com Google Gemini AI • 2025**
+**Desenvolvido com Claude AI (Anthropic) • 2025**

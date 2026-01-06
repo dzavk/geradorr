@@ -61,7 +61,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Carregar configurações do localStorage
 function carregarConfiguracoes() {
-    const apiKeySalva = localStorage.getItem('gemini_api_key');
+    const apiKeySalva = localStorage.getItem('claude_api_key');
     const promptSalvo = localStorage.getItem('custom_prompt');
 
     if (apiKeySalva) {
@@ -84,7 +84,7 @@ window.salvarApiKey = function() {
         return;
     }
 
-    localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem('claude_api_key', apiKey);
     alert('✅ API Key salva com sucesso!');
 };
 
@@ -170,7 +170,7 @@ window.gerarRoteiros = async function() {
     }
 
     // Salvar API Key automaticamente
-    localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem('claude_api_key', apiKey);
 
     // Mostrar loading
     document.getElementById('loading').style.display = 'block';

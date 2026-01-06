@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
-import google.generativeai as genai
+import requests
 import io
 import zipfile
 from docx import Document
@@ -11,6 +11,10 @@ import os
 
 app = Flask(__name__)
 CORS(app)
+
+# Configuração da API Claude
+CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
+CLAUDE_MODEL = "claude-3-5-haiku-20241022"  # Modelo que funciona com sua API Key
 
 # Prompt padrão para roteiros longos
 PROMPT_PADRAO = """VOCÊ É UM ROTEIRISTA PROFISSIONAL. Seu trabalho é ESCREVER IMEDIATAMENTE um roteiro completo.
@@ -65,7 +69,32 @@ IDIOMAS = {
     'arabe': {'nome': 'árabe', 'flag': '🇸🇦'}
 }
 
-def gerar_roteiro_longo(model, titulo, custom_prompt, idioma_info):
+def chamar_claude_api(api_key, prompt):
+    """Faz chamada para a API do Claude"""
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+    }
+
+    data = {
+        "model": CLAUDE_MODEL,
+        "max_tokens": 8192,  # Limite do Haiku
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    }
+
+    response = requests.post(CLAUDE_API_URL, headers=headers, json=data, timeout=300)
+    response.raise_for_status()
+
+    result = response.json()
+    return result['content'][0]['text']
+
+def gerar_roteiro_longo(api_key, titulo, custom_prompt, idioma_info):
     """Gera um roteiro longo em 2 partes"""
 
     # PARTE 1: Gerar primeira metade do roteiro
@@ -90,8 +119,7 @@ Esta é a PRIMEIRA PARTE do roteiro. Você DEVE escrever aproximadamente 5.000-6
 
 🚀 COMECE A ESCREVER AGORA! Escreva direto em """ + idioma_info['nome'] + ":"
 
-    response1 = model.generate_content(prompt_parte1)
-    texto_parte1 = response1.text
+    texto_parte1 = chamar_claude_api(api_key, prompt_parte1)
 
     # Pequena pausa entre as requisições
     time.sleep(2)
@@ -123,8 +151,7 @@ Esta é a SEGUNDA E ÚLTIMA PARTE do roteiro.
 
 🚀 CONTINUE ESCREVENDO AGORA em {idioma_info['nome']}:"""
 
-    response2 = model.generate_content(prompt_parte2)
-    texto_parte2 = response2.text
+    texto_parte2 = chamar_claude_api(api_key, prompt_parte2)
 
     # Juntar as duas partes
     roteiro_completo = texto_parte1 + '\n\n' + texto_parte2
@@ -179,16 +206,12 @@ def gerar_roteiros():
         if not api_key or not titulo:
             return jsonify({'error': 'API Key e título são obrigatórios'}), 400
 
-        # Configurar API do Gemini
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
-
         roteiros = {}
 
         # Gerar roteiros para cada idioma
         for idioma_key, idioma_info in IDIOMAS.items():
             try:
-                roteiro = gerar_roteiro_longo(model, titulo, custom_prompt, idioma_info)
+                roteiro = gerar_roteiro_longo(api_key, titulo, custom_prompt, idioma_info)
                 stats = contar_estatisticas(roteiro)
 
                 roteiros[idioma_key] = {
