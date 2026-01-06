@@ -1,58 +1,82 @@
-# 🎬 Gerador de Roteiros com IA
+# 🎬 Gerador de Roteiros Multilíngue com IA
 
-Aplicação web para gerar roteiros detalhados e extensos para vídeos em múltiplos idiomas usando Google Gemini AI.
+Aplicação web profissional para gerar roteiros detalhados e extensos em múltiplos idiomas usando **Claude AI (Anthropic)**.
 
 ## ✨ Funcionalidades
 
 - 🌍 **5 Idiomas**: Português, Espanhol, Inglês, Russo e Árabe
 - 📝 **Roteiros Extensos**: 10.000-12.000 palavras por roteiro
-- 💾 **Salvar API Key**: Sua chave fica salva no navegador
-- ⚙️ **Prompt Customizável**: Personalize como os roteiros são gerados
-- 📊 **Estatísticas**: Veja contagem de palavras e caracteres
-- 📋 **Copiar Fácil**: Botão para copiar roteiros com um clique
-- 🎨 **Interface Moderna**: Design responsivo e profissional
+- 🤖 **IA Avançada**: Claude 3.5 Haiku (Anthropic)
+- 📥 **Downloads**: TXT, DOCX e ZIP
+- 💾 **Persistência**: API Key e prompt salvos localmente
+- ⚙️ **Prompt Customizável**: Personalize completamente
+- 📊 **Estatísticas**: Contagem de palavras e caracteres
+- 📋 **Copiar Fácil**: Botão para copiar com um clique
+- 🎨 **Interface Moderna**: Design profissional e responsivo
+- ⚡ **Prompts Imperativos**: IA não faz perguntas, gera direto
 
 ## 🚀 Como Usar
 
-### 1. Obter API Key do Google Gemini
+### 1. Instalar Dependências
 
-1. Acesse: https://makersuite.google.com/app/apikey
-2. Faça login com sua conta Google
-3. Clique em "Create API Key"
-4. Copie a chave gerada
+```bash
+pip install -r requirements.txt
+```
 
-### 2. Configurar a Aplicação
+Ou manualmente:
 
-1. Abra o arquivo `index.html` no navegador
-2. Cole sua API Key no campo correspondente
-3. Clique em "💾 Salvar" para salvar a chave
-4. Digite o título do seu vídeo
-5. (Opcional) Customize o prompt de geração
+```bash
+pip install Flask==3.0.0 flask-cors==4.0.0 requests==2.31.0 python-docx==1.1.0
+```
 
-### 3. Gerar Roteiros
+### 2. Obter API Key do Claude
 
-1. Clique no botão "🚀 Gerar Roteiros em Todos os Idiomas"
-2. Aguarde a geração (pode levar alguns minutos)
-3. Os roteiros aparecerão um por um conforme forem gerados
-4. Clique em "📋 Copiar" para copiar o roteiro desejado
+1. Acesse: https://console.anthropic.com/settings/keys
+2. Crie sua conta na Anthropic
+3. Clique em "Create Key"
+4. Copie a chave (começa com `sk-ant-...`)
+
+### 3. Executar o Servidor
+
+```bash
+python app.py
+```
+
+Acesse: http://localhost:5000
+
+### 4. Gerar Roteiros
+
+1. Cole sua API Key do Claude
+2. Digite o título do vídeo
+3. (Opcional) Customize o prompt
+4. Clique em "🚀 Gerar Roteiros"
+5. Aguarde 5-15 minutos
+6. Baixe em TXT, DOCX ou ZIP
 
 ## 📁 Estrutura do Projeto
 
 ```
 geradorr/
-├── index.html      # Interface principal
-├── style.css       # Estilos e design
-├── app.js          # Lógica da aplicação
-└── README.md       # Documentação
+├── app.py                # Servidor Flask + Claude API
+├── requirements.txt      # Dependências Python
+├── templates/
+│   └── index.html       # Interface web
+├── static/
+│   ├── app.js           # JavaScript
+│   └── style.css        # Estilos
+├── COMO_EXECUTAR.md     # Instruções detalhadas
+└── README.md            # Este arquivo
 ```
 
 ## 🔧 Tecnologias Utilizadas
 
-- **HTML5**: Estrutura da página
-- **CSS3**: Estilização e responsividade
-- **JavaScript (ES6+)**: Lógica da aplicação
-- **Google Gemini AI**: Geração de conteúdo com IA
-- **LocalStorage**: Armazenamento local das configurações
+- **Python Flask**: Backend e API REST
+- **Claude AI (Anthropic)**: Geração de conteúdo com IA
+- **HTML5 + CSS3**: Interface moderna
+- **JavaScript (ES6+)**: Lógica do frontend
+- **python-docx**: Geração de arquivos DOCX
+- **requests**: Chamadas REST para API do Claude
+- **LocalStorage**: Salvamento local de configurações
 
 ## ⚙️ Configurações Avançadas
 
@@ -70,9 +94,16 @@ Crie um roteiro sobre '{titulo}' em {idioma} com foco em iniciantes...
 
 ### Persistência de Dados
 
-A aplicação salva automaticamente no navegador:
-- ✅ API Key do Gemini
+A aplicação salva automaticamente no navegador (localStorage):
+- ✅ API Key do Claude (seguro, apenas local)
 - ✅ Prompt customizado
+
+### Modelo e Limites
+
+- **Modelo**: claude-3-5-haiku-20241022
+- **Limite**: 8.192 tokens por requisição
+- **Geração**: 2 partes de ~5.000 palavras cada
+- **Total**: 10.000-12.000 palavras por roteiro
 
 ## 🎯 Idiomas Suportados
 
@@ -86,34 +117,53 @@ A aplicação salva automaticamente no navegador:
 
 ## ⚠️ Limites e Considerações
 
-- **Tempo de Geração**: 5-15 minutos para todos os idiomas
-- **Cota da API**: Respeite os limites gratuitos do Google Gemini
-- **Conexão**: Necessária internet estável
+- **Tempo de Geração**: 5-15 minutos para todos os 5 idiomas
+- **Custo da API**: A API do Claude é paga - veja https://anthropic.com/pricing
+- **Python**: Requer Python 3.8 ou superior
+- **Conexão**: Internet estável necessária
 - **Navegadores**: Chrome, Firefox, Safari, Edge (versões recentes)
 
 ## 🐛 Solução de Problemas
 
 ### Erro: "API Key inválida"
 - Verifique se copiou a chave corretamente (sem espaços)
-- Confirme que a API está ativada no Google Cloud
+- Confirme que a chave começa com `sk-ant-`
+- Certifique-se de que sua conta Anthropic está ativa
 
-### Erro: "Cota excedida"
-- Aguarde um tempo antes de gerar novos roteiros
-- Considere criar uma nova API Key
+### Erro: "ModuleNotFoundError"
+```bash
+pip install -r requirements.txt
+```
 
-### Roteiros não aparecem
-- Verifique a conexão com internet
-- Abra o Console do navegador (F12) para ver erros
-- Tente gerar novamente
+### Erro: "Rate limit exceeded"
+- Você excedeu o limite de requisições
+- Aguarde alguns minutos e tente novamente
 
-## 📝 Licença
+### Porta 5000 já em uso
+```bash
+# Linux/Mac
+lsof -ti:5000 | xargs kill -9
 
-Este projeto é de código aberto e pode ser usado livremente.
+# Windows
+netstat -ano | findstr :5000
+```
 
-## 👨‍💻 Desenvolvedor
+### Servidor não inicia
+```bash
+python --version  # Deve ser 3.8+
+```
 
-Desenvolvido com ❤️ usando Google Gemini AI
+## 📝 Documentação Completa
+
+Leia o [COMO_EXECUTAR.md](COMO_EXECUTAR.md) para instruções detalhadas.
+
+## 👨‍💻 Desenvolvido com
+
+- Claude AI (Anthropic)
+- Python Flask
+- Vanilla JavaScript
+- CSS3
 
 ---
 
-**Última atualização**: Dezembro 2025
+**2025** • Desenvolvido com ❤️ usando Claude AI
