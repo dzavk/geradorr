@@ -1,4 +1,4 @@
-# 🚀 Como Executar o Gerador de Roteiros (Versão Python)
+# 🚀 Como Executar o Gerador de Roteiros (Versão Python + Claude AI)
 
 ## 📋 Pré-requisitos
 
@@ -34,8 +34,9 @@ python app.py
 Você verá algo como:
 
 ```
-🎬 Servidor iniciado!
+🎬 Servidor Flask iniciado!
 📡 Acesse: http://localhost:5000
+⚙️  Usando Claude API: claude-3-5-haiku-20241022
 ⚠️  Pressione CTRL+C para parar
 ```
 
@@ -49,26 +50,33 @@ http://localhost:5000
 
 ## 🎯 Como Usar
 
-1. **Obter API Key do Claude (Anthropic)**
-   - Acesse: https://console.anthropic.com/settings/keys
-   - Faça login ou crie uma conta na Anthropic
-   - Clique em "Create Key" ou "Generate API Key"
-   - Copie a chave gerada (começa com "sk-ant-...")
+### 1. Obter API Key do Claude (Anthropic)
 
-2. **Configurar na Interface**
-   - Cole a API Key no campo correspondente
-   - Clique em "💾 Salvar" (fica salvo no navegador)
-   - Digite o título do vídeo
-   - (Opcional) Customize o prompt
+- Acesse: https://console.anthropic.com/settings/keys
+- Faça login ou crie uma conta na Anthropic
+- Clique em "Create Key" ou "Generate API Key"
+- Copie a chave gerada (começa com "sk-ant-...")
 
-3. **Gerar Roteiros**
-   - Clique em "🚀 Gerar Roteiros em Todos os Idiomas"
-   - Aguarde a geração (pode levar 5-15 minutos)
-   - Os roteiros aparecerão um por um
+### 2. Configurar na Interface
 
-4. **Fazer Download**
-   - **Individual**: Clique em "📥 TXT" ou "📥 DOCX" em cada roteiro
-   - **Em Massa**: Use os botões "📥 Baixar Todos" no final
+- Cole a API Key no campo correspondente
+- Clique em "💾 Salvar" (fica salvo no navegador)
+- Digite o título do vídeo
+- (Opcional) Customize o prompt usando as variáveis `{titulo}` e `{idioma}`
+
+### 3. Gerar Roteiros
+
+- Clique em "🚀 Gerar Roteiros em Todos os Idiomas"
+- Aguarde a geração (pode levar 5-15 minutos para todos os idiomas)
+- Os roteiros aparecerão um por um na tela
+
+### 4. Fazer Download
+
+**Individual:**
+- Clique em "📥 TXT" ou "📥 DOCX" em cada roteiro
+
+**Em Massa:**
+- Use os botões "📥 Baixar Todos (TXT ZIP)" ou "📥 Baixar Todos (DOCX ZIP)" no final da página
 
 ## 📁 Estrutura do Projeto
 
@@ -92,10 +100,11 @@ geradorr/
 - ❌ Não tem download ZIP
 - Arquivo: `index.html` na raiz
 
-### Versão Python Flask (templates/index.html + app.py)
+### Versão Python Flask (templates/index.html + app.py) ⭐ RECOMENDADA
 - ✅ Download TXT e DOCX
 - ✅ Download em massa (ZIP)
 - ✅ Processamento no servidor
+- ✅ Usa Claude API corretamente
 - ❌ Precisa rodar servidor Python
 - Arquivos: `app.py` + `templates/index.html`
 
@@ -107,11 +116,25 @@ pip install -r requirements.txt
 ```
 
 ### Erro: "Address already in use"
-Outra instância do servidor está rodando. Feche e tente novamente.
+Outra instância do servidor está rodando. Feche e tente novamente ou use:
+```bash
+# Linux/Mac
+lsof -ti:5000 | xargs kill -9
+
+# Windows
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+```
 
 ### Erro: "API Key inválida"
-- Verifique se copiou a chave corretamente
-- Confirme que a API está ativada no Google Cloud
+- Verifique se copiou a chave corretamente do console da Anthropic
+- Confirme que a chave começa com "sk-ant-"
+- Certifique-se de que sua conta Anthropic está ativa
+
+### Erro: "Rate limit exceeded"
+- Você excedeu o limite de requisições da API
+- Aguarde alguns minutos e tente novamente
+- Considere espaçar as requisições
 
 ### Servidor não inicia
 Verifique se o Python está instalado:
@@ -119,20 +142,55 @@ Verifique se o Python está instalado:
 python --version
 ```
 
-## 📝 Notas
+Deve mostrar Python 3.8 ou superior.
+
+## 📝 Notas Importantes
 
 - **Modelo usado**: Claude 3.5 Haiku (claude-3-5-haiku-20241022)
 - **Limite de tokens**: 8.192 tokens por requisição
 - Os roteiros são gerados em 2 partes de ~5.000 palavras cada
 - Total: 10.000-12.000 palavras por roteiro
-- 5 idiomas: Português, Espanhol, Inglês, Russo, Árabe
-- API Key fica salva no localStorage do navegador
+- **5 idiomas**: Português, Espanhol, Inglês, Russo, Árabe
+- API Key fica salva no localStorage do navegador (seguro, local)
 - Prompt customizado também fica salvo
-- Prompts imperativos impedem a IA de fazer perguntas
+- **Prompts imperativos** impedem a IA de fazer perguntas ao invés de gerar
+
+## 🎨 Personalização do Prompt
+
+O prompt padrão pode ser customizado. Use as variáveis:
+
+- `{titulo}` - Será substituído pelo título do vídeo
+- `{idioma}` - Será substituído pelo nome do idioma
+
+Exemplo de prompt customizado:
+
+```
+Você é um roteirista especializado em {idioma}.
+Crie um roteiro completo sobre "{titulo}" com:
+- Introdução envolvente
+- 10+ pontos principais
+- Conclusão impactante
+
+NÃO faça perguntas. COMECE A ESCREVER AGORA.
+```
+
+## 💡 Dicas
+
+1. **Títulos claros**: Use títulos específicos e descritivos
+2. **Aguarde pacientemente**: Cada idioma leva 2-3 minutos para gerar
+3. **Salve suas configurações**: Use os botões "💾 Salvar" para API Key e Prompt
+4. **Baixe em ZIP**: Use a opção ZIP para facilitar o download de todos os roteiros
 
 ## 🛑 Para parar o servidor
 
 Pressione `CTRL+C` no terminal onde o servidor está rodando.
+
+## 🚨 Custos da API
+
+A API do Claude é paga. Verifique os custos em:
+https://www.anthropic.com/pricing
+
+O modelo Claude 3.5 Haiku é o mais econômico.
 
 ---
 

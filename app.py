@@ -14,7 +14,7 @@ CORS(app)
 
 # Configuração da API Claude
 CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
-CLAUDE_MODEL = "claude-3-5-haiku-20241022"  # Modelo que funciona com sua API Key
+CLAUDE_MODEL = "claude-3-5-haiku-20241022"
 
 # Prompt padrão para roteiros longos
 PROMPT_PADRAO = """VOCÊ É UM ROTEIRISTA PROFISSIONAL. Seu trabalho é ESCREVER IMEDIATAMENTE um roteiro completo.
@@ -79,7 +79,7 @@ def chamar_claude_api(api_key, prompt):
 
     data = {
         "model": CLAUDE_MODEL,
-        "max_tokens": 8192,  # Limite do Haiku
+        "max_tokens": 8192,
         "messages": [
             {
                 "role": "user",
@@ -359,8 +359,9 @@ if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static', exist_ok=True)
 
-    print('🎬 Servidor iniciado!')
+    print('🎬 Servidor Flask iniciado!')
     print('📡 Acesse: http://localhost:5000')
+    print('⚙️  Usando Claude API: claude-3-5-haiku-20241022')
     print('⚠️  Pressione CTRL+C para parar')
 
     app.run(debug=True, host='0.0.0.0', port=5000)

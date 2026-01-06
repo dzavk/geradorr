@@ -152,7 +152,7 @@ window.gerarRoteiros = async function() {
 
     // Validações
     if (!apiKey) {
-        alert('⚠️ Por favor, insira sua API Key do Google Gemini.');
+        alert('⚠️ Por favor, insira sua API Key do Claude (Anthropic).');
         document.getElementById('apiKey').focus();
         return;
     }
@@ -191,7 +191,7 @@ window.gerarRoteiros = async function() {
     });
 
     try {
-        atualizarProgresso('🔧 Conectando com servidor...');
+        atualizarProgresso('🔧 Conectando com API do Claude...');
 
         // Fazer chamada para a API Python
         const response = await fetch('/api/gerar-roteiros', {
@@ -207,7 +207,8 @@ window.gerarRoteiros = async function() {
         });
 
         if (!response.ok) {
-            throw new Error('Erro ao gerar roteiros');
+            const errorData = await response.json();
+            throw new Error(errorData.erro || 'Erro ao gerar roteiros');
         }
 
         const data = await response.json();
@@ -275,7 +276,7 @@ window.gerarRoteiros = async function() {
 
         if (mensagemErro.includes('API_KEY_INVALID') || mensagemErro.includes('API key')) {
             mensagemErro = 'API Key inválida. Verifique se você copiou corretamente.';
-        } else if (mensagemErro.includes('quota')) {
+        } else if (mensagemErro.includes('quota') || mensagemErro.includes('rate_limit')) {
             mensagemErro = 'Cota da API excedida. Tente novamente mais tarde.';
         } else if (mensagemErro.includes('network') || mensagemErro.includes('fetch')) {
             mensagemErro = 'Erro de conexão. Verifique sua internet e se o servidor está rodando.';
@@ -407,4 +408,5 @@ window.downloadTodosRoteiros = async function(formato) {
 // Log de inicialização
 console.log('🎬 Gerador de Roteiros IA carregado com sucesso!');
 console.log('📚 Idiomas disponíveis:', Object.keys(IDIOMAS).join(', '));
-console.log('🖥️ Modo: Cliente-Servidor (Python Flask)');
+console.log('🖥️ Modo: Cliente-Servidor (Python Flask + Claude API)');
+console.log('🤖 Modelo: claude-3-5-haiku-20241022');
